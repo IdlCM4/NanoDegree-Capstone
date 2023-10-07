@@ -30,7 +30,7 @@ jobs:
             aws eks --region us-east-1 create-cluster --name eks --role-arn arn:aws:iam::403107932867:role/CreateEKS \
             --resources-vpc-config subnetIds="$listSubnets",securityGroupIds=$securityGroup
   
-  deploy_buld:
+  deploy_build:
     docker:
       - image: cimg/base:2022.06
     steps:
