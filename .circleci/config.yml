@@ -21,7 +21,7 @@ jobs:
       - run:
           name: obtain-information
           command: |
-            listSubnets=$(aws ec2 describe-subnets --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" --query "Subnets[*].SubnetId" --region us-east-1 --out json)
+            listSubnets=$(aws ec2 describe-subnets --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" --query "Subnets[*].SubnetId" --region us-east-1 --out text)
 
             securityGroup=$(aws ec2 describe-security-groups --region us-east-1 \
             --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
