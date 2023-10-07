@@ -39,7 +39,6 @@ workflows:
   default:
     jobs:
       - build:
-        context: slack-secrets
         filters:
           branches:
             only: [deploy-infraestructure]
