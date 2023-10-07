@@ -80,7 +80,7 @@ workflows:
             branches:
               only: [deploy-infraestructure]
       - deploy_build
-      - install_helm:
+      - install_deployment:
           requires: [deploy_build]
 
 
