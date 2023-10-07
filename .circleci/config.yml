@@ -10,7 +10,41 @@ jobs:
     steps:
       - checkout
       - run:
+          name: deploy-cloudFormation
+          environment:
+            AWS_CLI_STR_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+            AWS_CLI_STR_PROFILE_NAME: $AWS_SECRET_ACCESS_KEY
+          command: |
+          aws cloudformation deploy --template-file .\vpc.yml \
+          --tags project=proyecto-eks --region eu-west-3 --stack-name deploy-vpc \
+          --parameter-overrides VpcBlock=192.168.0.0/16 \
+          Subnet01Block=192.168.64.0/18 Subnet02Block=192.168.128.0/18 \
+          Subnet03Block=192.168.192.0/18
 
-      
+      - run:
+          name: obtain-information
+          command: |
+          list-subnets=$(aws ec2 describe-subnets --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
+          --query "Subnets[*].SubnetId")
+          security-group=$(aws ec2 describe-security-groups \
+          --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
+          --query "SecurityGroups[0].GroupId")
+
+      - run:
+          name: deploy-AWSCli
+          command: |
+          aws eks --region us-east-1 create-cluster --name eks \
+          --role-arn arn:aws:iam::403107932867:role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS \
+          --resources-vpc-config \
+          subnetIds=$list-subnets,securityGroupIds=$security-group
+  
+workflows:
+  default:
+    jobs:
+      - build:
+        context: slack-secrets
+        filters:
+          branches:
+            only: [deploy-infraestructure]
 
 
