@@ -47,13 +47,16 @@ jobs:
             docker tag app "${userdocker}/app:${CIRCLE_SHA1}"
             docker push "${userdocker}/app:${CIRCLE_SHA1}"
 
-  install_helm:
+  install_deployment:
     docker:
       - image: cimg/python:3.10.7
     steps:
       - checkout
       - run:
           name: Install awscli
+          environment:
+            AWS_CLI_STR_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+            AWS_CLI_STR_PROFILE_NAME: $AWS_SECRET_ACCESS_KEY
           command: |
             curl --silent "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
             -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
