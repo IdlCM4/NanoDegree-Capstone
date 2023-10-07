@@ -52,30 +52,30 @@ jobs:
           command: |
             login="$(docker login -u ${userdocker} -p ${passworddocker})"
             ${login}
-            docker tag app "${ECR_ENDPOINT}/app:${CIRCLE_SHA1}"
-            docker push "${ECR_ENDPOINT}/app:${CIRCLE_SHA1}"
+            docker tag app "${userdocker}/app:${CIRCLE_SHA1}"
+            docker push "${userdocker}/app:${CIRCLE_SHA1}"
 
-    install_helm:
-      docker:
-        - image: cimg/python:3.10.7
-      steps:
-        - checkout
-        - run:
-          name: Install awscli
-          command: |
-            curl --silent "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
-            -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
-        - run:
-          name: Install and configure kubectl
-          command: |
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s \
-            https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && sudo install \
-            -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && kubectl version --client
-        - deploy:
-          name: Deploy release
-          command: |
-            aws eks update-kubeconfig --region us-east-1 --name eks_2
-            kubectl apply -f app-deployment.yml
+  install_helm:
+    docker:
+      - image: cimg/python:3.10.7
+    steps:
+      - checkout
+      - run:
+        name: Install awscli
+        command: |
+          curl --silent "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
+          -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
+      - run:
+        name: Install and configure kubectl
+        command: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s \
+          https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && sudo install \
+          -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && kubectl version --client
+      - deploy:
+        name: Deploy release
+        command: |
+          aws eks update-kubeconfig --region us-east-1 --name eks_2
+          kubectl apply -f app-deployment.yml
 
 workflows:
   default:
