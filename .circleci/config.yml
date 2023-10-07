@@ -31,7 +31,7 @@ jobs:
           name: deploy-AWSCli
           command: |
             aws eks --region us-east-1 create-cluster --name eks \
-            --role-arn arn:aws:iam::403107932867:role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS \
+            --role-arn arn:aws:iam::403107932867:role/CreateEKS \
             --resources-vpc-config \
             subnetIds=$lisSubnets,securityGroupIds=$securityGroup
   
