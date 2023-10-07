@@ -1,51 +1,9 @@
 version: 2.1
 
-jobs:
-  deploy-infrastructure:
+jobs:      
+  create_infraestructure:
     docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: Ensure back-end infrastructure exists
-          environment:
-            AWS_CLI_STR_ACCESS_KEY: $AWS_ACCESS_KEY_ID
-            AWS_CLI_STR_PROFILE_NAME: $AWS_SECRET_ACCESS_KEY
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/backend.yml \
-              --tags project=udapeople \
-              --stack-name udapeople-backend-<<pipeline.parameters.workflow_id>>  \
-              --region us-east-1 \
-              --parameter-overrides ID=<<pipeline.parameters.workflow_id>> 
-      - run:
-          name: Ensure front-end infrastructure exist
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople \
-              --region us-east-1 \
-              --stack-name udapeople-frontend-<<pipeline.parameters.workflow_id>> \
-              --parameter-overrides ID=<<pipeline.parameters.workflow_id>> 
-      - run:
-          name: Add back-end ip to ansible inventory
-          command: |
-            public_ip=$(aws ec2 describe-instances \
-            --filters "Name=tag:aws:cloudformation:stack-name, Values=udapeople-backend-<<pipeline.parameters.workflow_id>>" \
-            --query "Reservations[0].Instances[0].PublicIpAddress" \
-            --region us-east-1)
-            echo $public_ip >> .circleci/ansible/inventory.txt
-            cat .circleci/ansible/inventory.txt
-            yum install -y tar gzip
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/.circleci/ansible/inventory.txt
-        
-
-  build:
-    docker:
-        - image: amazon/aws-cli
+        - image: circleci/node:14
     steps:
       - checkout
       - run:
@@ -54,44 +12,80 @@ jobs:
             AWS_CLI_STR_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
             AWS_CLI_STR_PROFILE_NAME: $AWS_SECRET_ACCESS_KEY
           command: |
-            aws cloudformation deploy --template-file .circleci/files/vpc.yml \
-            --tags project=proyecto-eks --region us-east-1 --stack-name deploy-vpc \
-            --parameter-overrides VpcBlock=192.168.0.0/16 \
-            Subnet01Block=192.168.64.0/18 Subnet02Block=192.168.128.0/18 \
-            Subnet03Block=192.168.192.0/18
+          aws cloudformation deploy --template-file .\vpc.yml \
+          --tags project=proyecto-eks --region eu-west-3 --stack-name deploy-vpc \
+          --parameter-overrides VpcBlock=192.168.0.0/16 \
+          Subnet01Block=192.168.64.0/18 Subnet02Block=192.168.128.0/18 \
+          Subnet03Block=192.168.192.0/18
 
       - run:
-          name: Obtain information and deploy AWScli
+          name: obtain-information
           command: |
-            listSubnets=$(aws ec2 describe-subnets --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
-            --query "Subnets[*].SubnetId" --region us-east-1 --out json)
-
-            securityGroup=$(aws ec2 describe-security-groups --region us-east-1 \
-            --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
-            --query "SecurityGroups[0].GroupId")
+          list-subnets=$(aws ec2 describe-subnets --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
+          --query "Subnets[*].SubnetId")
+          security-group=$(aws ec2 describe-security-groups \
+          --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
+          --query "SecurityGroups[0].GroupId")
 
             aws eks --region us-east-1 create-cluster --name eks --role-arn arn:aws:iam::403107932867:role/CreateEKS \
             --resources-vpc-config subnetIds="$listSubnets",securityGroupIds=$securityGroup
-
-            eksctl version
-
-      - run:
-          name: Obtain kube config
-          command: |
-            aws eks update-kubeconfig --region us-east-1 --name eks
-            cat .kube/config 
-      
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - .kube/config
   
+  deploy_infraestructure:
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --no-cache \
+              py-pip=9.0.0-r1
+            pip install \
+              docker-compose==1.12.0 \
+              awscli==1.11.76
+      - run:
+          name: Build application Docker image
+          command: |
+            docker build --cache-from=app -t app .
+      - deploy:
+          name: Push application Docker image
+          command: |
+            login="$(docker login -u ${userdocker} -p ${passworddocker})"
+            ${login}
+            docker tag app "${ECR_ENDPOINT}/app:${CIRCLE_SHA1}"
+            docker push "${ECR_ENDPOINT}/app:${CIRCLE_SHA1}"
+
+    install_helm:
+      docker:
+        - image: cimg/python:3.10.7
+      steps:
+        - checkout
+        - run:
+          name: Install awscli
+          command: |
+            curl --silent "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
+            -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
+        - run:
+          name: Install and configure kubectl
+          command: |
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s \
+            https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && sudo install \
+            -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && kubectl version --client
+        - deploy:
+          name: Deploy release
+          command: |
+            aws eks update-kubeconfig --region us-east-1 --name eks_2
+            kubectl apply -f app-deployment.yml
+
 workflows:
   default:
     jobs:
-      - build:
+      - create_infraestructure:
         filters:
           branches:
             only: [deploy-infraestructure]
+      - deploy_infraestructure:
+      - install_helm:
+
 
 
