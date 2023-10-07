@@ -31,8 +31,9 @@ jobs:
       - run:
           name: deploy-AWSCli
           command: |
+            echo "$listSubnets"
             aws eks --region us-east-1 create-cluster --name eks --role-arn arn:aws:iam::403107932867:role/CreateEKS \
-            --resources-vpc-config subnetIds=$listSubnets,securityGroupIds=$securityGroup
+            --resources-vpc-config subnetIds="$listSubnets",securityGroupIds=$securityGroup
 
   
 workflows:
