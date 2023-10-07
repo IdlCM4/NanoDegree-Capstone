@@ -28,6 +28,8 @@ jobs:
             --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
             --query "SecurityGroups[0].GroupId")
 
+            echo "$listSubnets"
+
       - run:
           name: deploy-AWSCli
           command: |
