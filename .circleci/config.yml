@@ -23,7 +23,7 @@ jobs:
           command: |
             listSubnets=$(aws ec2 describe-subnets --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
             --query "Subnets[*].SubnetId" --region us-east-1) 
-            security-group=$(aws ec2 describe-security-groups --region us-east-1 \
+            securityGroup=$(aws ec2 describe-security-groups --region us-east-1 \
             --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
             --query "SecurityGroups[0].GroupId")
 
@@ -33,7 +33,7 @@ jobs:
             aws eks --region us-east-1 create-cluster --name eks \
             --role-arn arn:aws:iam::403107932867:role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS \
             --resources-vpc-config \
-            subnetIds=$lisSubnets,securityGroupIds=$security-group
+            subnetIds=$lisSubnets,securityGroupIds=$securityGroup
   
 workflows:
   default:
