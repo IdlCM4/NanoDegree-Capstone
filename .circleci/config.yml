@@ -43,8 +43,7 @@ jobs:
       - deploy:
           name: Push application Docker image
           command: |
-            login="$(docker login -u ${userdocker} -p ${passworddocker})"
-            ${login}
+            docker login -u ${userdocker} -p ${passworddocker}
             docker tag app "${userdocker}/app:${CIRCLE_SHA1}"
             docker push "${userdocker}/app:${CIRCLE_SHA1}"
 
