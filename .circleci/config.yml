@@ -12,7 +12,7 @@ jobs:
             AWS_CLI_STR_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
             AWS_CLI_STR_PROFILE_NAME: $AWS_SECRET_ACCESS_KEY
           command: |
-            aws cloudformation deploy --template-file .circleci\files\vpc.yml \
+            aws cloudformation deploy --template-file .circleci/files/vpc.yml \
             --tags project=proyecto-eks --region eu-west-3 --stack-name deploy-vpc \
             --parameter-overrides VpcBlock=192.168.0.0/16 \
             Subnet01Block=192.168.64.0/18 Subnet02Block=192.168.128.0/18 \
