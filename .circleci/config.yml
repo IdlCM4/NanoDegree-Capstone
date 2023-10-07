@@ -84,8 +84,8 @@ workflows:
         filters:
           branches:
             only: [deploy-infraestructure]
-      - deploy_infraestructure:
-      - install_helm:
+      - deploy_infraestructure
+      - install_helm
 
 
 
