@@ -19,7 +19,7 @@ jobs:
             Subnet03Block=192.168.192.0/18
 
       - run:
-          name: obtain information and deploy AWScli
+          name: Obtain information and deploy AWScli
           command: |
             listSubnets=$(aws ec2 describe-subnets --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
             --query "Subnets[*].SubnetId" --region us-east-1 --out json)
@@ -30,6 +30,8 @@ jobs:
 
             aws eks --region us-east-1 create-cluster --name eks --role-arn arn:aws:iam::403107932867:role/CreateEKS \
             --resources-vpc-config subnetIds="$listSubnets",securityGroupIds=$securityGroup
+
+            eksctl version
 
       - run:
           name: Obtain kube config
