@@ -1,6 +1,48 @@
 version: 2.1
 
 jobs:
+  deploy-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Ensure back-end infrastructure exists
+          environment:
+            AWS_CLI_STR_ACCESS_KEY: $AWS_ACCESS_KEY_ID
+            AWS_CLI_STR_PROFILE_NAME: $AWS_SECRET_ACCESS_KEY
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --tags project=udapeople \
+              --stack-name udapeople-backend-<<pipeline.parameters.workflow_id>>  \
+              --region us-east-1 \
+              --parameter-overrides ID=<<pipeline.parameters.workflow_id>> 
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople \
+              --region us-east-1 \
+              --stack-name udapeople-frontend-<<pipeline.parameters.workflow_id>> \
+              --parameter-overrides ID=<<pipeline.parameters.workflow_id>> 
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            public_ip=$(aws ec2 describe-instances \
+            --filters "Name=tag:aws:cloudformation:stack-name, Values=udapeople-backend-<<pipeline.parameters.workflow_id>>" \
+            --query "Reservations[0].Instances[0].PublicIpAddress" \
+            --region us-east-1)
+            echo $public_ip >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
+            yum install -y tar gzip
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+        
+
   build:
     docker:
         - image: amazon/aws-cli
@@ -28,9 +70,8 @@ jobs:
             --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
             --query "SecurityGroups[0].GroupId")
 
-
-            # aws eks --region us-east-1 create-cluster --name eks --role-arn arn:aws:iam::403107932867:role/CreateEKS \
-            # --resources-vpc-config subnetIds="$listSubnets",securityGroupIds=$securityGroup
+            aws eks --region us-east-1 create-cluster --name eks --role-arn arn:aws:iam::403107932867:role/CreateEKS \
+            --resources-vpc-config subnetIds="$listSubnets",securityGroupIds=$securityGroup
 
             eksctl version
 
