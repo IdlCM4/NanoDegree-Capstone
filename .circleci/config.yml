@@ -31,6 +31,16 @@ jobs:
             aws eks --region us-east-1 create-cluster --name eks --role-arn arn:aws:iam::403107932867:role/CreateEKS \
             --resources-vpc-config subnetIds="$listSubnets",securityGroupIds=$securityGroup
 
+      - run:
+          name: Obtain kube config
+          command: |
+            aws eks update-kubeconfig --region us-east-1 --name eks
+            cat .kube/config 
+      
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - .kube/config
   
 workflows:
   default:
