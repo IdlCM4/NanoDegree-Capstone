@@ -67,7 +67,7 @@ jobs:
             AWS_CLI_STR_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
             AWS_CLI_STR_PROFILE_NAME: $AWS_SECRET_ACCESS_KEY
           command: |
-            aws eks update-kubeconfig --region us-east-1 --name eks_2
+            aws eks update-kubeconfig --region us-east-1 --name Eks
             kubectl apply -f app-deployment.yml
 
 workflows:
