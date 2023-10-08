@@ -45,4 +45,5 @@ Take a **screenshot of the kubectl command output** showing that the deployment 
 Take a **screenshot showing that you can access the application** after deployment.
 
 
-![Build docker image](/Screenshots/Build_docker_image.png "Build docker image")
+![Build docker image](/Screenshots/Build_docker_image.png "Build docker 
+image")
