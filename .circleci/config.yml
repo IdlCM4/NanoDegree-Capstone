@@ -36,13 +36,13 @@ jobs:
       - run:
           name: Build application Docker image
           command: |
-            docker build --cache-from=app -t app .
+            docker buil --cache-from=helloworld -t helloworld .
       - deploy:
           name: Push application Docker image
           command: |
             docker login -u ${userdocker} -p ${passworddocker}
-            docker tag app "${userdocker}/app:${CIRCLE_SHA1}"
-            docker push "${userdocker}/app:${CIRCLE_SHA1}"
+            docker tag helloworld "${userdocker}/helloworld:${CIRCLE_SHA1}"
+            docker push "${userdocker}/helloworld:${CIRCLE_SHA1}"
 
   install_deployment:
     docker:
