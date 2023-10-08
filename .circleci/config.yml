@@ -36,7 +36,7 @@ jobs:
       - run:
           name: Build application Docker image
           command: |
-            docker buil --cache-from=helloworld -t helloworld .
+            docker build --cache-from=helloworld -t helloworld .
       - deploy:
           name: Push application Docker image
           command: |

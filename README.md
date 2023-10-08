@@ -1,6 +1,4 @@
 # NanoDegree-Capstone
-
-
 ## Step 1: Propose and Scope the Project
 > Plan what your pipeline will look like.
 Decide which options you will include in your Continuous Integration phase. Use either Circle CI or Jenkins.
@@ -23,6 +21,10 @@ As a final step, the Kubernetes cluster will need to be initialized. The Kuberne
 
 For this step, I choosed CloudFormation.
 
+
+![EC2 Instances](/Screenshots/EC2.png "EC2 Instances")  
+
+![CloudFormation](/Screenshots/CloudFormation.png "CloudFormation")
 ## Step 4: Build your pipeline
 >Construct your pipeline in your GitHub repository.
 Set up all the steps that your pipeline will include.
@@ -31,7 +33,9 @@ Include your Dockerfile/source code in the Git repository.
 Include with your Linting step both a *failed Linting screenshot and a successful Linting screenshot* to show the Linter working properly.  
 
 
-See `config.yml` to check the deployment.
+See `config.yml` to check the deployment.  
+
+![Pipelines](/Screenshots/pipeline_success.png "Pipelines")
 
 ## Step 5: Test your pipeline
 >Perform builds on your pipeline.  
@@ -40,3 +44,5 @@ Take a **screenshot of your AWS EC2 page** showing the newly created (for blue/g
 Take a **screenshot of the kubectl command output** showing that the deployment is successful, pods are running, and the service can be accessed via an external IP or port forwarding.  
 Take a **screenshot showing that you can access the application** after deployment.
 
+
+![Build docker image](/Screenshots/Build_docker_image.png "Build docker image")
