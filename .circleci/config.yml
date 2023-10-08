@@ -13,33 +13,15 @@ jobs:
       - aws-cli/setup
       - kubernetes/install-kubectl
       - run:
-          name: deploy-cloudFormation
-          environment:
-            AWS_CLI_STR_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-            AWS_CLI_STR_PROFILE_NAME: $AWS_SECRET_ACCESS_KEY
-          command: |
-            aws cloudformation deploy --template-file .\vpc.yml \
-            --tags project=proyecto-eks --region eu-west-3 --stack-name deploy-vpc \
-            --parameter-overrides VpcBlock=192.168.0.0/16 \
-            Subnet01Block=192.168.64.0/18 Subnet02Block=192.168.128.0/18 \
-            Subnet03Block=192.168.192.0/18
-
-      - run:
-          name: obtain-information
-          command: |
-            list-subnets=$(aws ec2 describe-subnets --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
-            --query "Subnets[*].SubnetId")
-            security-group=$(aws ec2 describe-security-groups \
-            --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
-            --query "SecurityGroups[0].GroupId")
-
-      - run:
           name: Install eksctl
           command: |
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin     
       - run:
           name: Create kubernetes cluster
+          environment:
+            AWS_CLI_STR_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+            AWS_CLI_STR_PROFILE_NAME: $AWS_SECRET_ACCESS_KEY
           command: |
             clusterName="capstone-${CIRCLE_WORKFLOW_ID:0:7}"
             eksctl create cluster --name=Eks --region=us-east-1 --zones=us-east-1a,us-east-1b
