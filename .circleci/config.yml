@@ -90,7 +90,7 @@ workflows:
       - create_infraestructure:
           filters:
             branches:
-              only: [deploy-infraestructure]
+              only: [deployment]
       - deploy_build
       - install_deployment:
           requires: [deploy_build]
