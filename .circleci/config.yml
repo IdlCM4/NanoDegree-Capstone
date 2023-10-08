@@ -3,9 +3,11 @@ version: 2.1
 jobs:      
   create_infraestructure:
     docker:
-        - image: circleci/node:14
+        - image: cimg/base:2021.04
     steps:
       - checkout
+      - aws-cli/setup
+      - kubernetes/install-kubectl
       - run:
           name: deploy-cloudFormation
           environment:
@@ -27,9 +29,18 @@ jobs:
             --filters "Name=tag:aws:cloudformation:stack-name,Values=deploy-vpc" \
             --query "SecurityGroups[0].GroupId")
 
-            aws eks --region us-east-1 create-cluster --name eks --role-arn arn:aws:iam::403107932867:role/CreateEKS \
-            --resources-vpc-config subnetIds="$listSubnets",securityGroupIds=$securityGroup
-  
+      - run:
+          name: Install eksctl
+          command: |
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+            sudo mv /tmp/eksctl /usr/local/bin     
+      - run:
+          name: Create kubernetes cluster
+          command: |
+            clusterName="capstone-${CIRCLE_WORKFLOW_ID:0:7}"
+            eksctl create cluster --name=Eks --region=us-east-1 --zones=us-east-1a,us-east-1b
+            curl https://kvdb.io/AnCL2AcTbjnej3iwokxmCv/clusterName -d Eks
+
   deploy_build:
     docker:
       - image: cimg/base:2022.06
